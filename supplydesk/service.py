@@ -43,6 +43,7 @@ class OrderService:
     def _build_lines(self, state, items):
         lines = []
         subtotal = 0
+        requested = {}
         for item in items:
             if not isinstance(item, dict):
                 raise ValueError("Each item must contain a product_id and quantity.")
@@ -52,12 +53,14 @@ class OrderService:
             quantity = item.get("quantity")
             if type(quantity) is not int or quantity < MIN_QUANTITY or quantity > MAX_QUANTITY:
                 raise ValueError("Quantity must be an integer from 1 to 99.")
-            if quantity > product["stock"]:
-                raise ValueError("Not enough stock for " + product["product_id"] + ".")
+            product_id = product["product_id"]
+            requested[product_id] = requested.get(product_id, 0) + quantity
+            if requested[product_id] > product["stock"]:
+                raise ValueError("Not enough stock for " + product_id + ".")
             line_total = product["unit_price_cents"] * quantity
             subtotal += line_total
             lines.append({
-                "product_id": product["product_id"],
+                "product_id": product_id,
                 "name": product["name"],
                 "unit_price_cents": product["unit_price_cents"],
                 "quantity": quantity,
@@ -69,7 +72,7 @@ class OrderService:
         self._validate_request(customer_type, items, fulfillment)
         lines, subtotal = self._build_lines(state, items)
         discount = 0
-        if customer_type == "student" and subtotal > STUDENT_DISCOUNT_THRESHOLD_CENTS:
+        if customer_type == "student" and subtotal >= STUDENT_DISCOUNT_THRESHOLD_CENTS:
             discount = (subtotal * STUDENT_DISCOUNT_PERCENT + 50) // 100
         delivery = 0
         if fulfillment == "delivery" and subtotal - discount < FREE_DELIVERY_THRESHOLD_CENTS:
@@ -113,6 +116,8 @@ class OrderService:
     def cancel_order(self, order_id):
         state = self.store.load()
         order = self._find_order(state, order_id)
+        if order["status"] == "cancelled":
+            return order
         for line in order["items"]:
             product = self._find_product(state, line["product_id"])
             if product is not None:
