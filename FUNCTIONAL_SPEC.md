@@ -170,3 +170,8 @@ Menu behavior:
 - Exit when the user chooses `0`, reaches the end of input, or presses `Ctrl+C`.
 
 Individual commands retain their documented JSON output and exit statuses. Unlike the menu, individual placement and cancellation commands act immediately without asking for confirmation.
+
+
+## Express delivery (CR-01)
+
+Fulfillment must be exactly `pickup`, `delivery` or `express`. Express always adds a delivery charge of 1,200 cents, even when standard delivery would be free. The student discount rules and rounding are unchanged and apply to merchandise only. Total = subtotal minus discount plus delivery charge. Express orders keep their fulfillment, items, delivery fee, discount and total when retrieved, reopened and cancelled.

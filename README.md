@@ -214,3 +214,13 @@ These commands use the same orders and stock as the interactive menu opened with
 python -m supplydesk --help
 python -m supplydesk quote --help
 ```
+
+## 7. Express delivery
+
+Fulfillment can be `pickup`, `delivery` or `express`. Express always costs 1,200 cents ($12.00 CAD) and is never waived. Standard delivery costs $6.00 and is free when the subtotal minus the discount is at least $100.00. The student discount applies to merchandise only.
+
+```sh
+python -m supplydesk quote --customer student --fulfillment express --item hoodie:2
+```
+
+The expected `total_cents` is `8400`. In the menu, type `express` at the fulfillment prompt.
